@@ -26,7 +26,7 @@ Maven or Gradle (based on your project setup)
 Step 1: Clone the Repository
 bash
 Copy code
-git clone https://github.com/your-repo/social-media-platform.git
+git clone https://github.com/SohaibAli976/social-media-platform/social-media-platform.git
 cd social-media-platform
 Step 2: Configure MySQL Database
 Ensure that you have MySQL installed and running. Create a database in MySQL:
