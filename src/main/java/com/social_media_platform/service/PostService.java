@@ -8,6 +8,7 @@ import com.social_media_platform.repository.CommentRepository;
 import com.social_media_platform.repository.PostRepository;
 import com.social_media_platform.repository.UserRepository;
 import com.social_media_platform.util.JwtUtil;
+import lombok.NoArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
@@ -18,6 +19,7 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.util.Optional;
 
+@NoArgsConstructor(force = true)
 @Service
 public class PostService {
     private final PostRepository postRepository;
@@ -26,9 +28,11 @@ public class PostService {
     private final CommentRepository commentRepository;
     private final JwtUtil jwtUtil;
 
+
     public PostService(PostRepository postRepository,
                        UserRepository userRepository,
-                       CommentRepository commentRepository, JwtUtil jwtUtil) {
+                       CommentRepository commentRepository,
+                       JwtUtil jwtUtil) {
         this.postRepository = postRepository;
         this.userRepository = userRepository;
         this.commentRepository = commentRepository;
@@ -37,6 +41,7 @@ public class PostService {
 
     public ResponseEntity<?> createPost(Post post, String token) {
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
+        assert userRepository != null;
         Optional<User> user = userRepository.findByUsername(username);
 
         if (user.isEmpty()) {
@@ -44,14 +49,17 @@ public class PostService {
         }
 
         post.setUser(user.get());
+        assert postRepository != null;
         postRepository.save(post);
         return ResponseEntity.status(HttpStatus.CREATED).body(post);
     }
     public ResponseEntity<?> getAllPosts(Pageable pageable) {
+        assert postRepository != null;
         Page<Post> posts = postRepository.findAll(pageable);
         return ResponseEntity.ok(posts);
     }
     public ResponseEntity<?> getPostById(Long id) {
+        assert postRepository != null;
         Optional<Post> post = postRepository.findById(id);
 
         if (post.isPresent()) {
@@ -61,6 +69,7 @@ public class PostService {
         }
     }
     public ResponseEntity<?> updatePost(Long id, Post post, String token) {
+        assert postRepository != null;
         Optional<Post> existingPost = postRepository.findById(id);
         if (existingPost.isEmpty()) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Post not found");
@@ -77,6 +86,7 @@ public class PostService {
         return ResponseEntity.ok(post);
     }
     public ResponseEntity<?> deletePost(Long id, String token) {
+        assert postRepository != null;
         Optional<Post> existingPost = postRepository.findById(id);
         if (existingPost.isEmpty()) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Post not found");
@@ -91,12 +101,14 @@ public class PostService {
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
     public ResponseEntity<?> addComment(Long id, Comment comment, String token) {
+        assert postRepository != null;
         Optional<Post> post = postRepository.findById(id);
         if (post.isEmpty()) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Post not found");
         }
 
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
+        assert userRepository != null;
         Optional<User> user = userRepository.findByUsername(username);
 
         if (user.isEmpty()) {
@@ -106,16 +118,19 @@ public class PostService {
         comment.setPost(post.get());
         comment.setUser(user.get());
         comment.setTimestamp(LocalDateTime.now());
+        assert commentRepository != null;
         commentRepository.save(comment);
         return ResponseEntity.status(HttpStatus.CREATED).body(comment);
     }
     public ResponseEntity<?> likePost(Long id, String token) {
+        assert postRepository != null;
         Optional<Post> post = postRepository.findById(id);
         if (post.isEmpty()) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Post not found");
         }
 
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
+        assert userRepository != null;
         Optional<User> user = userRepository.findByUsername(username);
 
         if (user.isEmpty()) {
@@ -131,6 +146,7 @@ public class PostService {
         return ResponseEntity.ok(post.get());
     }
     public ResponseEntity<?> searchPosts(SearchRequest searchRequest, Pageable pageable) {
+        assert postRepository != null;
         Page<Post> posts = postRepository.findByContentContainingOrTitleContaining(searchRequest.getKeyword(), searchRequest.getKeyword(), pageable);
         return ResponseEntity.ok(posts);
     }

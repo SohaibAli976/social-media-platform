@@ -5,9 +5,10 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.User;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
@@ -16,11 +17,13 @@ import java.util.ArrayList;
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtUtil jwtTokenUtil;
-    private final AuthenticationManager authenticationManager;
+   // private final AuthenticationManager authenticationManager;
 
-    public JwtAuthenticationFilter(JwtUtil jwtTokenUtil, AuthenticationManager authenticationManager) {
+    public JwtAuthenticationFilter(JwtUtil jwtTokenUtil
+                                 //  AuthenticationManager authenticationManager
+    ) {
         this.jwtTokenUtil = jwtTokenUtil;
-        this.authenticationManager = authenticationManager;
+        //this.authenticationManager = authenticationManager;
     }
 
 
@@ -40,7 +43,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         if (token != null && jwtTokenUtil.validateToken(token)) {
             String username = jwtTokenUtil.getUsername(token);
             // Add authentication to SecurityContext
-            UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(username, null, new ArrayList<>());
+            // Perform the authentication using AuthenticationManager
+            UserDetails userDetails = new User(username, "", new ArrayList<>());
+            UsernamePasswordAuthenticationToken authentication =
+                    new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
+
+           // UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(username, null, new ArrayList<>());
             SecurityContextHolder.getContext().setAuthentication(authentication);
         }
         filterChain.doFilter(request, response);

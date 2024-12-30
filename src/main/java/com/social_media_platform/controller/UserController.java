@@ -3,7 +3,6 @@ package com.social_media_platform.controller;
 import com.social_media_platform.dto.request.LoginRequest;
 import com.social_media_platform.dto.request.SearchRequest;
 import com.social_media_platform.dto.request.UserRegisterRequest;
-import com.social_media_platform.entity.User;
 import com.social_media_platform.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
@@ -30,6 +29,7 @@ public class UserController {
     public ResponseEntity<?> getUserById(@PathVariable Long id) {
         return userService.getUserProfile(id);
     }
+
     @PostMapping("/{id}/follow")
     public ResponseEntity<?> followUser(@PathVariable Long id, @RequestHeader("Authorization") String token) {
         return userService.followUser(id, token);
@@ -38,14 +38,15 @@ public class UserController {
     public ResponseEntity<?> getFollowers(@PathVariable Long id) {
         return userService.getFollowers(id);
     }
+
     @GetMapping("/{id}/following")
     public ResponseEntity<?> getFollowing(@PathVariable Long id) {
         return userService.getFollowing(id);
     }
+
     @PostMapping("/search")
     public ResponseEntity<?> searchUsers(@RequestBody SearchRequest searchRequest, Pageable pageable) {
         return userService.searchUsers(searchRequest, pageable);
     }
-
 
 }
