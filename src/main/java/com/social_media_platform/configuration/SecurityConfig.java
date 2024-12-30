@@ -4,6 +4,8 @@ import com.social_media_platform.util.JwtUtil;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -26,12 +28,18 @@ public class SecurityConfig {
         // Disable CSRF if you don't need it (for stateless REST API, it is commonly disabled)
         return  http.csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(authz -> authz
+                        .requestMatchers(HttpMethod.POST, "/auth/login").permitAll() // Allow login endpoint to be public
                         .requestMatchers(HttpMethod.POST, "/users/register", "/users/login").permitAll()  // Allow these endpoints for everyone
                         .requestMatchers(HttpMethod.GET, "/posts/**", "/users/**").authenticated()        // Protect other endpoints
                         .anyRequest().authenticated() // Secure all other requests
                 )
+
                 // Add JwtAuthenticationFilter before UsernamePasswordAuthenticationFilter
-                .addFilterBefore(new JwtAuthenticationFilter(jwtUtil), UsernamePasswordAuthenticationFilter.class).build();
+                .addFilterBefore(new JwtAuthenticationFilter(jwtUtil),
+                        UsernamePasswordAuthenticationFilter.class)
+               // .sessionManagement().
+                //sessionCreationPolicy(SessionCreationPolicy.STATELESS).and().build();
+                .build();
 
         //return http.build();// Required to complete configuration in newer versions
     }
@@ -41,11 +49,11 @@ public class SecurityConfig {
         return new BCryptPasswordEncoder();
     }
 
-//    // Define the AuthenticationManager Bean
-//    @Bean
-//    public AuthenticationManager authenticationManager(HttpSecurity http) throws Exception {
-//        AuthenticationManagerBuilder authenticationManagerBuilder = http.getSharedObject(AuthenticationManagerBuilder.class);
-//        return authenticationManagerBuilder.build();
-//    }
+    // Define the AuthenticationManager bean explicitly
+    @Bean
+    public AuthenticationManager authenticationManager(HttpSecurity http) throws Exception {
+        AuthenticationManagerBuilder authenticationManagerBuilder = http.getSharedObject(AuthenticationManagerBuilder.class);
+        return authenticationManagerBuilder.build();  // Return the built AuthenticationManager
+    }
 
 }
